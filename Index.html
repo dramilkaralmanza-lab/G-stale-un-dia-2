@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GASTELE UN DIA - Asistente UCI</title>
+    <!-- Tailwind CSS para un diseño limpio y moderno -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .card-critico { border-left: 4px solid #ef4444; }
+        .card-alerta { border-left: 4px solid #f59e0b; }
+        .card-estable { border-left: 4px solid #10b981; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <!-- Encabezado -->
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-6 px-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">GASTELE UN DIA</h1>
+                <p class="text-blue-100 text-sm">Lista de Chequeo Diaria en Cuidado Intensivo</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="pacienteId" placeholder="ID Paciente / Cama" class="px-3 py-1.5 rounded-lg bg-white/10 text-white placeholder-blue-200 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        
+        <!-- Formulario Principal -->
+        <form id="gasteleForm" class="space-y-4">
+            
+            <!-- G - Glicemia -->
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-alerta" id="sec-glicemia">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="font-bold text-lg text-gray-900">G - Glicemia</label>
+                    <span id="badge-glicemia" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">Pendiente</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Último Valor (mg/dL)</label>
+                        <input type="number" id="glicemia" placeholder="Ej. 140" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition" oninput="evaluarGlicemia()">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Infusión de Insulina</label>
+                        <select id="insulina" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition">
+                            <option value="No">No requiere</option>
+                            <option value="Sí">Sí, según protocolo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A - Analgesia -->
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-estable">
+                <label class="block font-bold text-lg text-gray-900 mb-3">A - Analgesia</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Escala de Dolor (BPS / CPOT / EVA)</label>
+                        <select id="analgesia_escala" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Controlado / Sin dolor">Controlado / Sin dolor</option>
+                            <option value="Dolor leve a moderado">Dolor leve a moderado</option>
+                            <option value="Dolor severo / No controlado">Dolor severo / No controlado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Estrategia / Fármaco</label>
+                        <input type="text" id="analgesia_medicamento" placeholder="Ej. Fentanilo / Paracetamol" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- S - Sedación -->
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-estable">
+                <label class="block font-bold text-lg text-gray-900 mb-3">S - Sedación</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Escala RASS</label>
+                        <select id="sedacion_rass" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="0 (Alerta y tranquilo)">0 (Alerta y tranquilo)</option>
+                            <option value="-1 a -2 (Sedación ligera)">-1 a -2 (Sedación ligera)</option>
+                            <option value="-3 a -4 (Sedación profunda)">-3 a -4 (Sedación profunda)</option>
+                            <option value="+1 a +4 (Agitado / Peligroso)">+1 a +4 (Agitado / Peligroso)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Meta RASS del paciente</label>
+                        <input type="text" id="sedacion_meta" placeholder="Ej. Meta RASS 0 / -1" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- T - Tromboprofilaxis -->
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-estable">
+                <label class="block font-bold text-lg text-gray-900 mb-3">T - Tromboprofilaxis</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Tipo de Profilaxis</label>
+                        <select id="tromboprofilaxis" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Farmacológica (Enoxaparina / Heparina)">Farmacológica (Enoxaparina / Heparina)</option>
+                            <option value="Mecánica (Medias / Compresión neumática)">Mecánica (Medias / Compresión neumática)</option>
+                            <option value="Contraindicada temporalmente">Contraindicada temporalmente</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">Observación / Ajuste Renal</label>
+                        <input type="text" id="trombo_obs" placeholder="Ej. Ajustado por TFG < 30" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- E - Elevación Cabecera -->
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-estable">
+                <label class="block font-bold text-lg text-gray-900 mb-3">E - Elevación de la Cabecera</label>
+                <select id="cabecera" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="30° a 45° (Óptimo para prevención de NAVM)">30° a 45° (Óptimo para prevención de NAVM)</option>
+                    <option value="Menos de 30° (Justificado médicamente / Shock)">Menos de 30° (Justificado médicamente / Shock)</option>
+                </select>
+            </div>
+
+            <!-- Resto del Acrónimo colapsado/simplificado en un bloque para ahorrar espacio -->
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 space-y-4">
+                <h3 class="font-bold text-lg text-gray-900 border-b pb-2 mb-2">L E U N D I A (Componentes Clínicos Adicionales)</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">L - Liberación de Ventilación (SBT)</label>
+                        <select id="liberacion" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                            <option value="Apto y en protocolo de destete (SBT)">Apto y en protocolo de destete (SBT)</option>
+                            <option value="No apto (Inestabilidad / Parámetros altos)">No apto (Inestabilidad / Parámetros altos)</option>
+                            <option value="No aplica (No ventilado)">No aplica (No ventilado)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">E - Evacuación Intestinal</label>
+                        <input type="text" id="evacuacion" placeholder="Ej. Deponente (+) / Sin catarsis 3 días" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">U - Úlceras por Presión y Estrés</label>
+                        <select id="ulceras" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                            <option value="Protección gástrica activa y cambios de posición">Protección gástrica activa y cambios de posición</option>
+                            <option value="Solo protección de piel (Cambios de posición)">Solo protección de piel (Cambios de posición)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">N - Nutrición</label>
+                        <input type="text" id="nutricion" placeholder="Ej. Enteral por SNG a meta / Ayuno por cirugía" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">D - Diuresis / Balance Hídrico</label>
+                        <input type="text" id="diuresis" placeholder="Ej. 1.2 cc/kg/hr - Balance neutro" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 font-medium uppercase mb-1">I - Invasiones (Revisión de Catéteres)</label>
+                        <input type="text" id="invasiones" placeholder="Ej. CVC y Sonda Vesical sin signos de infección" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 font-medium uppercase mb-1">A - Antibióticos (Días de Tx / Cultivos)</label>
+                    <input type="text" id="antibioticos" placeholder="Ej. Meropenem día 3. Pendiente ajustar por cultivos." class="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg w-full">
+                </div>
+            </div>
+
+            <!-- Botón Generar -->
+            <button type="button" onclick="generarReporte()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3.5 rounded-xl shadow-lg transition transform active:scale-98 cursor-pointer">
+                Generar Reporte Clínico
+            </button>
+        </form>
+
+        <!-- Sección del Reporte Generado -->
+        <div id="seccionReporte" class="hidden bg-slate-950 text-slate-100 p-5 rounded-xl shadow-inner space-y-3 font-mono text-sm">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pase de Guardia / Evolución Médica</span>
+                <button onclick="copiarAlPortapapeles()" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs px-3 py-1 rounded-md hover:bg-indigo-500/40 transition cursor-pointer">
+                    Copiar Texto
+                </button>
+            </div>
+            <pre id="textoReporte" class="whitespace-pre-wrap break-words"></pre>
+        </div>
+
+    </main>
+
+    <!-- JavaScript para lógica reactiva y generación de texto -->
+    <script>
+        // Lógica de semáforo para el campo Glicemia
+        function evaluarGlicemia() {
+            const glicemiaInput = document.getElementById('glicemia').value;
+            const secglicemia = document.getElementById('sec-glicemia');
+            const badge = document.getElementById('badge-glicemia');
+            
+            if (!glicemiaInput) {
+                secglicemia.className = "bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-alerta";
+                badge.innerText = "Pendiente";
+                badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800";
+                return;
+            }
+
+            const valor = parseInt(glicemiaInput);
+
+            if (valor >= 140 && valor <= 180) {
+                // Meta estándar UCI (140-180 mg/dL)
+                secglicemia.className = "bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-estable";
+                badge.innerText = "En Meta";
+                badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+            } else if (valor < 140 && valor >= 100) {
+                // Rango aceptable pero bajo supervisión
+                secglicemia.className = "bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-alerta";
+                badge.innerText = "Límite Inferior";
+                badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800";
+            } else {
+                // Crítico: Hipoglucemia (<100) o Hiperglucemia (>180)
+                secglicemia.className = "bg-white p-5 rounded-xl shadow-xs border border-gray-100 card-critico";
+                badge.innerText = valor < 100 ? "¡Alerta: Hipoglucemia!" : "¡Alerta: Hiperglucemia!";
+                badge.className = "text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800";
+            }
+        }
+
+        // Construye el texto estructurado
+        function generarReporte() {
+            const idPaciente = document.getElementById('pacienteId').value || 'N/A';
+            const fecha = new Date().toLocaleString();
+
+            const datos = {
+                G: `Glicemia: ${document.getElementById('glicemia').value || 'No registrada'} mg/dL (Insulina: ${document.getElementById('insulina').value})`,
+                A: `Analgesia: ${document.getElementById('analgesia_escala').value} | Fármaco: ${document.getElementById('analgesia_medicamento').value || 'Ninguno'}`,
+                S: `Sedación: RASS ${document.getElementById('sedacion_rass').value} | Meta: ${document.getElementById('sedacion_meta').value || 'No definida'}`,
+                T: `Tromboprofilaxis: ${document.getElementById('tromboprofilaxis').value} ${document.getElementById('trombo_obs').value ? ' - ' + document.getElementById('trombo_obs').value : ''}`,
+                E: `Elevación Cabecera: ${document.getElementById('cabecera').value}`,
+                L: `Liberación Ventilación: ${document.getElementById('liberacion').value}`,
+                Ev: `Evacuación: ${document.getElementById('evacuacion').value || 'No reportada'}`,
+                U: `Úlceras: ${document.getElementById('ulceras').value}`,
+                N: `Nutrición: ${document.getElementById('nutricion').value || 'No especificada'}`,
+                D: `Diuresis/Balances: ${document.getElementById('diuresis').value || 'No especificado'}`,
+                I: `Invasiones: ${document.getElementById('invasiones').value || 'Sin Novedad'}`,
+                An: `Antibióticos: ${document.getElementById('antibioticos').value || 'Sin antimicrobianos'}`
+            };
+
+            let texto = `========================================\n`;
+            texto += `  EVALUACIÓN DIARIA: GASTELE UN DIA\n`;
+            texto += `========================================\n`;
+            texto += `Paciente/Cama: ${idPaciente}\n`;
+            texto += `Fecha/Hora: ${fecha}\n\n`;
+            
+            for (const [clave, valor] of Object.entries(datos)) {
+                texto += `[${clave}] ${valor}\n`;
+            }
+            
+            texto += `\nPlan / Pendientes: Revisión de metas completada en ronda médica.`;
+
+            document.getElementById('textoReporte').innerText = texto;
+            document.getElementById('seccionReporte').classList.remove('hidden');
+            
+            // Scroll suave hacia el reporte generado
+            document.getElementById('seccionReporte').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Copiar rápido al portapapeles
+        function copiarAlPortapapeles() {
+            const texto = document.getElementById('textoReporte').innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('¡Reporte copiado al portapapeles con éxito!');
+            }).catch(err => {
+                alert('Error al copiar el texto: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
